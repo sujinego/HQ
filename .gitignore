@@ -34,6 +34,5 @@ build/
 .vscode/
 
 
-# 로컬 개발용 설정 파일 제외
+# 로컬 설정 파일 제외
 src/main/resources/application.properties
-src/main/resources/application-demo.properties
