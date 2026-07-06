@@ -1,0 +1,53 @@
+/* ── Reset & Base ──────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; display: flex; min-height: 100vh; }
+
+/* ── Status Badge ──────────────────────────────────────── */
+.status { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.s-confirmed { background: #dbeafe; color: #1d4ed8; }
+.s-shipping  { background: #e0f2fe; color: #0369a1; }
+.s-pending   { background: #fef9c3; color: #a16207; }
+.s-completed { background: #dcfce7; color: #15803d; }
+.s-cancelled { background: #fee2e2; color: #dc2626; }
+.s-success   { background: #dcfce7; color: #15803d; }
+.s-fail      { background: #fee2e2; color: #dc2626; }
+.s-warn      { background: #fef9c3; color: #a16207; }
+.s-active    { background: #dcfce7; color: #15803d; }
+.s-inactive  { background: #f1f5f9; color: #64748b; }
+
+/* ── Button ────────────────────────────────────────────── */
+.btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; }
+.btn-primary   { background: #a50034; color: #fff; }
+.btn-primary:hover   { background: #8b0029; }
+.btn-secondary { background: #f1f5f9; color: #374151; }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-green     { background: #16a34a; color: #fff; }
+.btn-green:hover     { background: #15803d; }
+.btn-sm        { padding: 4px 10px; font-size: 11px; }
+.excel-btn { background: #16a34a; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+.excel-btn:hover { background: #15803d; }
+.run-btn { background: #a50034; color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+.run-btn:hover { background: #8b0029; }
+
+/* ── Table ─────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; }
+th { background: #f8fafc; padding: 9px 12px; text-align: left; font-size: 11px; color: #64748b; border-bottom: 1px solid #e2e8f0; font-weight: 600; text-transform: uppercase; }
+td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #374151; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafbff; }
+
+/* ── Form ──────────────────────────────────────────────── */
+.form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 600; color: #374151; }
+.form-group input,
+.form-group select { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; outline: none; }
+.form-group input:focus,
+.form-group select:focus { border-color: #a50034; }
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+
+/* ── Util ──────────────────────────────────────────────── */
+.loading { color: #94a3b8; font-size: 13px; padding: 20px; text-align: center; }
+.empty   { color: #cbd5e1; font-size: 13px; padding: 20px; text-align: center; }
+.section { display: none; }
+.section.active { display: block; }

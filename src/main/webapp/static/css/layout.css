@@ -1,0 +1,21 @@
+/* ── Sidebar ────────────────────────────────────────────── */
+.sidebar { width: 220px; background: #1a1a2e; color: #fff; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; }
+.sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.logo-lg  { font-size: 24px; font-weight: 900; color: #a50034; }
+.logo-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.menu-group-title { padding: 10px 16px 4px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+.menu-item { display: flex; align-items: center; padding: 9px 16px; cursor: pointer; color: rgba(255,255,255,0.7); font-size: 13px; transition: all 0.2s; border-left: 3px solid transparent; }
+.menu-item:hover  { background: rgba(255,255,255,0.05); color: #fff; }
+.menu-item.active { background: rgba(165,0,52,0.2); color: #fff; border-left-color: #a50034; }
+.menu-icon { width: 18px; margin-right: 10px; font-size: 15px; }
+
+/* ── Main Wrapper ───────────────────────────────────────── */
+.main-wrapper { margin-left: 220px; flex: 1; display: flex; flex-direction: column; }
+
+/* ── Topbar ─────────────────────────────────────────────── */
+.topbar { background: #fff; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8eaf0; position: sticky; top: 0; z-index: 50; }
+.page-title  { font-size: 16px; font-weight: 700; color: #1a202c; }
+.topbar-right { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #64748b; }
+
+/* ── Content ────────────────────────────────────────────── */
+.content { padding: 20px 24px; flex: 1; }

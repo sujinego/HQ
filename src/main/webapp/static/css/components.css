@@ -1,0 +1,43 @@
+/* ── KPI Grid ───────────────────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
+.kpi-card { background: #fff; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-top: 3px solid #e2e8f0; transition: border-color 0.2s; }
+.kpi-card:hover { border-top-color: #a50034; }
+.kpi-label { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+.kpi-value { font-size: 26px; font-weight: 800; color: #1a202c; }
+.kpi-unit  { font-size: 13px; color: #94a3b8; margin-left: 2px; }
+
+/* ── Card ───────────────────────────────────────────────── */
+.card-row { display: grid; gap: 16px; margin-bottom: 16px; }
+.card-row.col2 { grid-template-columns: 1fr 1fr; }
+.card-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
+.card { background: #fff; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card-title  { font-size: 14px; font-weight: 700; color: #1a202c; }
+.card-action { font-size: 12px; color: #a50034; cursor: pointer; }
+
+/* ── Modal ──────────────────────────────────────────────── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 24px; width: 560px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.modal-title { font-size: 16px; font-weight: 700; }
+.modal-close { cursor: pointer; font-size: 20px; color: #94a3b8; background: none; border: none; }
+
+/* ── Country Row ────────────────────────────────────────── */
+.country-row  { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.country-row:last-child { border-bottom: none; }
+.country-flag { width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-right: 12px; }
+.country-info { flex: 1; }
+.country-name { font-size: 13px; font-weight: 600; }
+.country-meta { font-size: 11px; color: #94a3b8; }
+
+/* ── Batch Item ─────────────────────────────────────────── */
+.batch-item { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f1f5f9; gap: 10px; }
+.batch-item:last-child { border-bottom: none; }
+
+/* ── Search Filter ──────────────────────────────────────── */
+.search-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.search-bar input,
+.search-bar select { padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; }
+.search-bar input:focus,
+.search-bar select:focus { outline: none; border-color: #a50034; }
