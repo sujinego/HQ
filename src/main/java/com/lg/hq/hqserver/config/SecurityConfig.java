@@ -34,7 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers("/static/**").permitAll()
                 .antMatchers("/favicon.ico").permitAll()
-                .antMatchers("/","/login", "/hash", "/seed-products",
+                .antMatchers("/login", "/hash", "/seed-products",
                     "/clean-test-products").permitAll()
                 // ── Actuator ──────────────────────────────
                 .antMatchers("/actuator/**").hasRole("ADMIN")
@@ -51,16 +51,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // ── HR 권한 분리 ──────────────────────────
                 .antMatchers(HttpMethod.GET,    "/api/hr/**")
-                .hasAnyRole("ADMIN", "KR_USER", "US_USER")
+                    .hasAnyRole("ADMIN", "KR_USER", "US_USER")
                 .antMatchers(HttpMethod.POST,   "/api/hr/**")
-                .hasRole("ADMIN")
+                    .hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT,    "/api/hr/**")
-                .hasRole("ADMIN")
+                    .hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/hr/**")
-                .hasRole("ADMIN")
+                    .hasRole("ADMIN")
+
                 // ── 배치 수동 실행: ADMIN만 ──────────────────
                 .antMatchers(HttpMethod.POST, "/api/batch/run/**")
                     .hasRole("ADMIN")
+
                 // ── 나머지 API: 로그인만 하면 접근 가능 ──────
                 .antMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
