@@ -9,7 +9,11 @@ var API = (function () {
 
     // ── 공통 fetch 래퍼 ──────────────────────────────────────
     function get(url) {
-        return fetch(BASE + url).then(function (r) {
+        return fetch(BASE + url, {
+          headers:   {
+              'X-Requested-With': 'XMLHttpRequest'
+          }
+        }).then(function (r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
         });
@@ -18,7 +22,10 @@ var API = (function () {
     function post(url, body) {
         return fetch(BASE + url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: body ? JSON.stringify(body) : undefined
         }).then(function (r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -27,7 +34,13 @@ var API = (function () {
     }
 
     function postText(url) {
-        return fetch(BASE + url, { method: 'POST' }).then(function (r) {
+        return fetch(BASE + url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        }).then(function (r) {
             return r.text();
         });
     }
