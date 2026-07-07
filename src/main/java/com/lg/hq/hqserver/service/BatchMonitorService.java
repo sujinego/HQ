@@ -6,8 +6,10 @@ import com.lg.hq.hqserver.mapper.hq.HqMapper;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 @Service
 public class BatchMonitorService {
+
+    private static final Logger log = LoggerFactory.getLogger(BatchMonitorService.class);
 
     private final HqMapper hqMapper;
     private final CacheManager cacheManager;
@@ -90,6 +94,7 @@ public class BatchMonitorService {
                 }
 
             } catch (Exception e) {
+                log.error("[getSchedules] {} 조회 실패: {}", batchName, e.toString());
                 row.put("lastStatus",  "미실행");
                 row.put("lastStarted", null);
                 row.put("lastRecords", 0);
@@ -137,7 +142,8 @@ public class BatchMonitorService {
      * GET /api/batch/stats
      */
     public List<Map<String, Object>> getBatchStats() {
-        return hqMapper.findBatchStats();
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        return hqMapper.findBatchStats(sevenDaysAgo);
     }
 
     /**

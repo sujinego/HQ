@@ -2,6 +2,7 @@ package com.lg.hq.hqserver.mapper.hq;
 
 import org.apache.ibatis.annotations.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -99,9 +100,10 @@ public interface HqMapper {
             "SUM(CASE WHEN status='FAIL' THEN 1 ELSE 0 END) AS fail_cnt, " +
             "ROUND(AVG(TIMESTAMPDIFF(SECOND, started_at, ended_at)),1) AS avg_sec " +
             "FROM batch_log " +
-            "WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
+            "WHERE started_at >= #{sinceDate} " +
+//            "WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) " +
             "GROUP BY batch_name ORDER BY batch_name")
-    List<Map<String, Object>> findBatchStats();
+    List<Map<String, Object>> findBatchStats(@Param("sinceDate") LocalDateTime sinceDate);
 
     //감사로그
     @Select("<script>" +
