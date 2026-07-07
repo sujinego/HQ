@@ -2,6 +2,7 @@ package com.lg.hq.hqserver.mapper.hq;
 
 import org.apache.ibatis.annotations.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,7 @@ public interface HrMapper {
             @Param("yearMonth") String yearMonth);
 
     // 직원별 월 근태 집계 (급여 계산용)
+    // 바뀌어야 하는 버전
     @Select("SELECT emp_id, " +
             "COUNT(*) AS work_days, " +
             "SUM(work_hours) AS total_work_hours, " +
@@ -74,9 +76,10 @@ public interface HrMapper {
             "SUM(CASE WHEN status = 'ABSENT' THEN 1 ELSE 0 END) AS absent_days, " +
             "SUM(CASE WHEN status = 'LATE'   THEN 1 ELSE 0 END) AS late_days " +
             "FROM attendance " +
-            "WHERE FORMATDATETIME(work_date, 'yyyy-MM') = #{yearMonth} " +
+            "WHERE EXTRACT(YEAR FROM work_date) = EXTRACT(YEAR FROM #{yearMonthDate}) " +
+            "AND EXTRACT(MONTH FROM work_date) = EXTRACT(MONTH FROM #{yearMonthDate}) " +
             "AND emp_id = #{empId}")
-    Map<String, Object> sumAttendanceByEmp(@Param("yearMonth") String yearMonth,
+    Map<String, Object> sumAttendanceByEmp(@Param("yearMonthDate") LocalDate yearMonthDate,
                                            @Param("empId")     String empId);
 
     // 미처리 근태 직원 목록 (근태 마감 배치용)

@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -18,16 +19,10 @@ public class CacheService {
     private static final Logger log = LoggerFactory.getLogger(CacheService.class);
 
     private final JdbcTemplate hqJdbc;
-    private final JdbcTemplate krJdbc;
-    private final JdbcTemplate usJdbc;
 
     public CacheService(
-            @Qualifier("hqJdbc") JdbcTemplate hqJdbc,
-            @Qualifier("krJdbc") JdbcTemplate krJdbc,
-            @Qualifier("usJdbc") JdbcTemplate usJdbc) {
+            @Qualifier("hqJdbc") JdbcTemplate hqJdbc) {
         this.hqJdbc = hqJdbc;
-        this.krJdbc = krJdbc;
-        this.usJdbc = usJdbc;
     }
 
     /**
@@ -63,10 +58,12 @@ public class CacheService {
     public Double getMonthlySalesCached() {
         log.info("[Cache MISS] monthlySales - DB 조회");
         try {
+            LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
             Double sales = hqJdbc.queryForObject(
                     "SELECT IFNULL(SUM(amount_krw), 0) FROM fact_sales " +
-                            "WHERE sale_date >= DATE_FORMAT(NOW(), '%Y-%m-01')",
-                    Double.class);
+                            "WHERE sale_date >= ?",
+                    Double.class,
+                    firstDayOfMonth);
             return sales != null ? sales : 0.0;
         } catch (Exception e) {
             log.warn("[Cache] monthlySales 조회 실패: {}", e.getMessage());

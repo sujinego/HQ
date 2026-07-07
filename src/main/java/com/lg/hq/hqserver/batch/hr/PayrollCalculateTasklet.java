@@ -45,6 +45,7 @@ public class PayrollCalculateTasklet {
             LocalDateTime started    = LocalDateTime.now();
             String yearMonth = LocalDate.now()
                     .format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            LocalDate yearMonthDate = LocalDate.now().withDayOfMonth(1);
             int processed = 0;
 
             log.info("[PayrollCalculate] {} 급여 계산 시작", yearMonth);
@@ -64,7 +65,7 @@ public class PayrollCalculateTasklet {
 
                     // 3. 근태 집계 조회
                     Map<String, Object> attendance =
-                            hrMapper.sumAttendanceByEmp(yearMonth, empId);
+                            hrMapper.sumAttendanceByEmp(yearMonthDate, empId);
 
                     double workDays    = attendance != null && attendance.get("work_days") != null
                             ? ((Number) attendance.get("work_days")).doubleValue() : 0;
