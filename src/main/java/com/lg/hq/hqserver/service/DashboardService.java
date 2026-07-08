@@ -1,10 +1,9 @@
 package com.lg.hq.hqserver.service;
 
-import com.lg.hq.hqserver.batch.sales.SalesAggregateJobConfig;
 import com.lg.hq.hqserver.config.CountryContext;
 import com.lg.hq.hqserver.mapper.country.CountryMapper;
 import com.lg.hq.hqserver.mapper.hq.HqMapper;
-import com.lg.hq.hqserver.mapper.kr.KrMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

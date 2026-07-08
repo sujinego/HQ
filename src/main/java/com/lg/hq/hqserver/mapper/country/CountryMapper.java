@@ -46,7 +46,7 @@ public interface CountryMapper {
     List<Map<String, Object>> findRecentOrders(@Param("limit") int limit);
 
     // 주문 목록 (orders만, JOIN 없음)
-    @Select("<script>" +
+       @Select("<script>" +
             "SELECT order_no, customer_id, total_amount, status, order_date, created_at " +
             "FROM orders WHERE 1=1 " +
             "<if test='keyword != null and keyword != \"\"'>" +

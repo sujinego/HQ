@@ -4,6 +4,7 @@ import com.lg.hq.hqserver.common.ApiResponse;
 import com.lg.hq.hqserver.common.SecurityUtils;
 import com.lg.hq.hqserver.config.CountryContext;
 import com.lg.hq.hqserver.mapper.country.CountryMapper;
+import com.lg.hq.hqserver.mapper.hq.HqMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.lg.hq.hqserver.common.SecurityUtils.getCurrentUsername;
 
@@ -24,13 +26,15 @@ public class OrderService {
 
     private final CountryMapper countryMapper;
     private final AuditLogService auditLogService;
+    private final HqMapper hqMapper;
 
     public OrderService(
             CountryMapper countryMapper,
             AuditLogService auditLogService,
-            CacheService cacheService) {
+            HqMapper hqMapper) {
         this.countryMapper = countryMapper;
         this.auditLogService = auditLogService;
+        this.hqMapper = hqMapper;
     }
 
     // ══════════════════════════════════════════════════
@@ -38,7 +42,7 @@ public class OrderService {
     // Service: 전국가 조회, 권한 체크 없음
     // ══════════════════════════════════════════════════
 
-    @Transactional(readOnly = true)
+//    @Transactional(readOnly = true)
     public Map<String, Object> getOrders(String country,
                                          String keyword,
                                          String status,
@@ -53,7 +57,7 @@ public class OrderService {
         // 전국가 합산
         return getAllOrders(keyword, status, startDate, endDate, page, size);
     }
-
+    // 국가 지정 시 해당 국가만
     private Map<String, Object> getOrdersByCountry(String country,
                                                    String keyword,
                                                    String status,
@@ -73,6 +77,20 @@ public class OrderService {
         }
     }
 
+    private List<String> getActiveCountryCodes() {
+        return hqMapper.findAllCountries().stream()
+                .filter(c -> {
+                    Object active = c.get("is_active");
+                    if (active == null) return false;
+                    if (active instanceof Boolean) {
+                        return (Boolean) active;
+                    }
+                    return ((Number) active).intValue() == 1;
+                })
+                .map(c -> (String) c.get("country_code"))
+                .collect(Collectors.toList());
+    }
+    //전체 국가
     private Map<String, Object> getAllOrders(String keyword,
                                              String status,
                                              String startDate,
@@ -80,14 +98,20 @@ public class OrderService {
                                              int page, int size) {
         List<Map<String, Object>> allList = new ArrayList<>();
         int totalCount = 0;
+        int fetchSize = page * size;  // 이 페이지까지 필요한 최대 건수
 
-        for (String code : List.of("KR", "US")) {
-            try {
+//        for (String code : List.of("KR", "US")) {
+
+        List<String> activeCodes = getActiveCountryCodes();
+        log.info("[getAllOrders] 대상 국가: {}", activeCodes);
+
+        for (String code : activeCodes) {
+        try {
                 CountryContext.set(code);
                 totalCount += countryMapper.countOrdersPaged(
                         keyword, status, startDate, endDate);
                 List<Map<String, Object>> list = countryMapper.findOrdersPaged(
-                        keyword, status, startDate, endDate, size, 0);
+                        keyword, status, startDate, endDate, fetchSize, 0);
                 list.forEach(o -> o.put("_country", code));
                 allList.addAll(list);
             } finally {
