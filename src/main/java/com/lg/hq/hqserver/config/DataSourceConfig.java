@@ -3,13 +3,13 @@ package com.lg.hq.hqserver.config;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -17,11 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-
 public class DataSourceConfig {
     //화면용 (MyBatis + JdbcTemplate):  hqDataSource  → hqJdbc, hqSqlSessionFactory
     //배치 전용 (JdbcTemplate만): hqBatchDataSource → hqBatchJdbc   ← HQ Reader용
     // krBatchDataSource → krBatchJdbc   ← KR Writer용
+
+    // XML 매퍼 경로 패턴 (resources/mapper/** 하위 전부)
+    private static final String MAPPER_LOCATION_PATTERN = "classpath:mapper/**/*.xml";
 
     // ── DataSource ────────────────────────
     @Bean @Primary
@@ -75,6 +77,10 @@ public class DataSourceConfig {
             @Qualifier("countryRoutingDataSource") DataSource ds) throws Exception {
         SqlSessionFactoryBean f = new SqlSessionFactoryBean();
         f.setDataSource(ds);
+        // XML 매퍼 위치 명시 (mapper/country/*.xml 포함)
+        f.setMapperLocations(
+                new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
+        );
         // MyBatis 설정 추가
         org.apache.ibatis.session.Configuration config =
                 new org.apache.ibatis.session.Configuration();
@@ -89,6 +95,10 @@ public class DataSourceConfig {
             @Qualifier("hqDataSource") DataSource ds) throws Exception {
         SqlSessionFactoryBean f = new SqlSessionFactoryBean();
         f.setDataSource(ds);
+        // XML 매퍼 위치 명시 (mapper/hq/*.xml 포함)
+        f.setMapperLocations(
+                new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
+        );
         return f.getObject();
     }
 
@@ -97,6 +107,9 @@ public class DataSourceConfig {
             @Qualifier("krDataSource") DataSource ds) throws Exception {
         SqlSessionFactoryBean f = new SqlSessionFactoryBean();
         f.setDataSource(ds);
+        f.setMapperLocations(
+                new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
+        );
         return f.getObject();
     }
 
@@ -105,6 +118,9 @@ public class DataSourceConfig {
             @Qualifier("usDataSource") DataSource ds) throws Exception {
         SqlSessionFactoryBean f = new SqlSessionFactoryBean();
         f.setDataSource(ds);
+        f.setMapperLocations(
+                new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
+        );
         return f.getObject();
     }
 
