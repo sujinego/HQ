@@ -78,6 +78,20 @@ var Utils = (function () {
         var el = document.getElementById(elId);
         if (el) el.innerHTML = '<div class="loading">로딩 중...</div>';
     }
+    //응답 객체 모든 키 소문자로 변환
+    function lowerKeysDeep(value) {
+        if (Array.isArray(value)) {
+            return value.map(lowerKeysDeep);
+        }
+        if (value !== null && typeof value === 'object') {
+            var result = {};
+            Object.keys(value).forEach(function (key) {
+                result[key.toLowerCase()] = lowerKeysDeep(value[key]);
+            });
+            return result;
+        }
+        return value;
+    }
 
 
     return {
@@ -92,7 +106,7 @@ var Utils = (function () {
         nvl:         nvl,
         renderError: renderError,
         renderLoading: renderLoading,
-
+        lowerKeysDeep:lowerKeysDeep
     };
 
 })();

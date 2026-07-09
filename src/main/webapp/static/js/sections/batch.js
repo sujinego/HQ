@@ -34,7 +34,7 @@ var BatchSection = (function () {
     function loadLogs() {
         Utils.renderLoading('batch-logs');
         API.batch.getLogs({ page: 0, size: 20 }).then(function (data) {
-            var list = data.logs || [];
+            var list = Utils.lowerKeysDeep(data.logs || []);
             if (!list.length) {
                 document.getElementById('batch-logs').innerHTML = '<div class="empty">이력 없음</div>';
                 return;

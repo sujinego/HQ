@@ -91,7 +91,9 @@ var MonitorSection = (function () {
     // ── 배치 통계 (7일) ──────────────────────────────────────
     function loadBatchStats() {
         API.batch.getStats().then(function (list) {
-            var rows = (list || []).map(function (r) {
+            var normalized = Utils.lowerKeysDeep(list || []);
+
+            var rows = normalized.map(function (r) {
                 var rate = r.total_runs > 0
                     ? Math.round((r.success_cnt / r.total_runs) * 100) : 0;
                 var rateColor = rate >= 90 ? '#16a34a' : rate >= 70 ? '#eab308' : '#dc2626';
@@ -107,7 +109,8 @@ var MonitorSection = (function () {
             document.getElementById('batch-stats').innerHTML =
                 '<table><thead><tr><th>배치명</th><th>총실행</th><th>성공</th><th>실패</th><th>성공률</th><th>평균소요</th></tr></thead>'
                 + '<tbody>' + rows + '</tbody></table>';
-        }).catch(function () {
+        }).catch(function (err) {
+            console.error('배치 통계 에러:', err);
             Utils.renderError('batch-stats', '배치 통계 로드 실패');
         });
     }
