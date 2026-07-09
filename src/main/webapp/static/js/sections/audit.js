@@ -12,11 +12,12 @@ var AuditSection = (function () {
 
         Utils.renderLoading('audit-logs');
         API.batch.getAuditLogs(params).then(function (list) {
-            if (!list || !list.length) {
+            var normalized = Utils.lowerKeysDeep(list || []);
+            if (!normalized.length) {
                 document.getElementById('audit-logs').innerHTML = '<div class="empty">감사 로그 없음</div>';
                 return;
             }
-            var rows = list.map(function (l) {
+            var rows = normalized.map(function (l) {
                 return '<tr>'
                     + '<td style="color:#64748b;font-size:11px">' + (l.created_at || '-') + '</td>'
                     + '<td><b>' + (l.action || '-') + '</b></td>'
