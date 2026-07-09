@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lg.hq.hqserver.mapper.hq.HrMapper">
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- 인사 (HR) - HQ DB 직원/근태/급여 -->
+    <!-- ══════════════════════════════════════════════════════ -->
+
+    <!-- ── 직원 ───────────────────────────────────────────── -->
+
+    <!-- 전체 직원 목록 -->
+    <select id="findAllEmployees" resultType="map">
+        SELECT emp_id, emp_name, department, position,
+               base_salary, hire_date, status, created_at
+        FROM employee
+        WHERE status = 'ACTIVE'
+        ORDER BY department, emp_id
+    </select>
+
+    <!-- 직원 단건 조회 -->
+    <select id="findEmployeeById" resultType="map">
+        SELECT * FROM employee WHERE emp_id = #{empId}
+    </select>
+
+    <!-- 부서별 직원 목록 -->
+    <select id="findEmployeesByDept" resultType="map">
+        SELECT emp_id, emp_name, department, position, base_salary, hire_date
+        FROM employee
+        WHERE status = 'ACTIVE' AND department = #{department}
+        ORDER BY emp_id
+    </select>
+
+    <!-- 직원 등록 -->
+    <insert id="insertEmployee">
+        INSERT INTO employee
+        (emp_id, emp_name, department, position, base_salary, hire_date, status)
+        VALUES (#{empId}, #{empName}, #{department}, #{position},
+                #{baseSalary}, #{hireDate}, 'ACTIVE')
+    </insert>
+
+    <!-- 직원 상태 변경 (ACTIVE/LEAVE/RESIGNED) -->
+    <update id="updateEmployeeStatus">
+        UPDATE employee
+        SET status = #{status}, updated_at = NOW()
+        WHERE emp_id = #{empId}
+    </update>
+
+    <!-- 직원 급여 변경 -->
+    <update id="updateEmployeeSalary">
+        UPDATE employee
+        SET base_salary = #{baseSalary}, updated_at = NOW()
+        WHERE emp_id = #{empId}
+    </update>
+
+    <!-- ── 근태 ───────────────────────────────────────────── -->
+
+    <!-- 특정 월 근태 목록 -->
+    <select id="findAttendanceByMonth" resultType="map">
+        SELECT a.*, e.emp_name, e.department
+        FROM attendance a
+                 JOIN employee e ON a.emp_id = e.emp_id
+        WHERE FORMATDATETIME(a.work_date, 'yyyy-MM') = #{yearMonth}
+        ORDER BY a.emp_id, a.work_date
+    </select>
+
+    <!-- 직원별 월 근태 집계 (급여 계산용) -->
+    <select id="sumAttendanceByEmp" resultType="map">
+        SELECT emp_id,
+               COUNT(*) AS work_days,
+               SUM(work_hours) AS total_work_hours,
+               SUM(overtime_hours) AS total_overtime,
+               SUM(CASE WHEN status = 'ABSENT' THEN 1 ELSE 0 END) AS absent_days,
+               SUM(CASE WHEN status = 'LATE'   THEN 1 ELSE 0 END) AS late_days
+        FROM attendance
+        WHERE EXTRACT(YEAR FROM work_date) = EXTRACT(YEAR FROM #{yearMonthDate})
+          AND EXTRACT(MONTH FROM work_date) = EXTRACT(MONTH FROM #{yearMonthDate})
+          AND emp_id = #{empId}
+    </select>
+
+    <!-- 미처리 근태 직원 목록 (근태 마감 배치용) -->
+    <select id="findAbsentEmployees" resultType="map">
+        SELECT e.emp_id, e.emp_name
+        FROM employee e
+        WHERE e.status = 'ACTIVE'
+          AND e.emp_id NOT IN (
+            SELECT emp_id FROM attendance WHERE work_date = #{workDate}
+        )
+    </select>
+
+    <!-- 근태 INSERT (배치에서 자동 생성) -->
+    <insert id="insertAttendance">
+        INSERT INTO attendance
+        (emp_id, work_date, check_in, check_out, work_hours, overtime_hours, status)
+        VALUES (#{empId}, #{workDate}, #{checkIn}, #{checkOut},
+                #{workHours}, #{overtimeHours}, #{status})
+    </insert>
+
+    <!-- 근태 UPDATE (출퇴근 기록) -->
+    <update id="updateAttendance">
+        UPDATE attendance
+        SET check_out = #{checkOut},
+            work_hours = #{workHours},
+            overtime_hours = #{overtimeHours}
+        WHERE emp_id = #{empId} AND work_date = #{workDate}
+    </update>
+
+    <!-- ── 급여 ───────────────────────────────────────────── -->
+
+    <!-- 특정 월 급여 목록 -->
+    <select id="findPayrollByMonth" resultType="map">
+        SELECT p.*, e.emp_name, e.department, e.position
+        FROM payroll p
+                 JOIN employee e ON p.emp_id = e.emp_id
+        WHERE p.pay_year_month = #{yearMonth}
+        ORDER BY e.department, p.emp_id
+    </select>
+
+    <!-- 직원별 급여 이력 -->
+    <select id="findPayrollByEmp" resultType="map">
+        SELECT p.*, e.emp_name
+        FROM payroll p
+                 JOIN employee e ON p.emp_id = e.emp_id
+        WHERE p.emp_id = #{empId}
+        ORDER BY p.pay_year_month DESC
+            LIMIT 12
+    </select>
+
+    <!-- 급여 INSERT (배치에서 계산 후 저장) -->
+    <insert id="upsertPayroll">
+        INSERT INTO payroll
+        (emp_id, pay_year_month, base_salary, overtime_pay, bonus,
+         gross_pay, tax, insurance, total_deduction, net_pay, status)
+        VALUES (#{empId}, #{yearMonth}, #{baseSalary}, #{overtimePay}, #{bonus},
+                #{grossPay}, #{tax}, #{insurance}, #{totalDeduction}, #{netPay}, 'CALCULATED')
+            ON DUPLICATE KEY UPDATE
+                                 base_salary=VALUES(base_salary), overtime_pay=VALUES(overtime_pay),
+                                 bonus=VALUES(bonus), gross_pay=VALUES(gross_pay),
+                                 tax=VALUES(tax), insurance=VALUES(insurance),
+                                 total_deduction=VALUES(total_deduction), net_pay=VALUES(net_pay)
+    </insert>
+
+    <!-- 급여 지급 상태 변경 (CALCULATED → PAID) -->
+    <update id="markPayrollAsPaid">
+        UPDATE payroll
+        SET status = 'PAID'
+        WHERE pay_year_month = #{yearMonth}
+    </update>
+
+    <!-- 월별 급여 합계 (대시보드용) -->
+    <select id="sumPayrollByMonth" resultType="map">
+        SELECT
+            COUNT(*) AS total_employees,
+            SUM(gross_pay) AS total_gross,
+            SUM(total_deduction) AS total_deduction,
+            SUM(net_pay) AS total_net
+        FROM payroll
+        WHERE pay_year_month = #{yearMonth}
+    </select>
+
+</mapper>

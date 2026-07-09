@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lg.hq.hqserver.mapper.hq.HqMapper">
+
+    <!-- 배치 최신 이력 (단건) -->
+    <select id="findLastBatchLog" resultType="map">
+        SELECT status, started_at, ended_at, records_processed, error_message
+        FROM batch_log
+        WHERE batch_name = #{batchName}
+        ORDER BY log_id DESC
+            LIMIT 1
+    </select>
+
+    <!-- 국가별 배치 최신 이력 -->
+    <select id="findLastBatchLogByCountry" resultType="map">
+        SELECT b.country_code, b.status, b.started_at, b.ended_at,
+               b.records_processed, b.error_message
+        FROM batch_log b
+                 INNER JOIN (
+            SELECT country_code, MAX(log_id) AS max_id
+            FROM batch_log
+            WHERE batch_name = #{batchName}
+            GROUP BY country_code
+        ) latest ON b.log_id = latest.max_id
+        ORDER BY b.country_code
+    </select>
+
+    <!-- 상품 상태별 조회 -->
+    <select id="findProductsByStatus" resultType="map">
+        SELECT product_code, product_name_ko, status
+        FROM product_master
+        WHERE status = #{status}
+    </select>
+
+    <!-- 오늘자 환율 -->
+    <select id="findTodayExchangeRates" resultType="map">
+        SELECT *
+        FROM exchange_rate
+        WHERE rate_date = CURDATE()
+        ORDER BY currency_code
+    </select>
+
+    <!-- 배치 로그 목록 (페이징) -->
+    <select id="findBatchLogs" resultType="map">
+        SELECT *
+        FROM batch_log
+        ORDER BY started_at DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 국가별 마지막 상품 동기화 이력 -->
+    <select id="findLastProductSyncLog" resultType="map">
+        SELECT MAX(ended_at) AS last_sync, MAX(status) AS last_status
+        FROM batch_log
+        WHERE batch_name = 'LARGE_PRODUCT_SYNC'
+          AND (country_code = #{countryCode} OR country_code = 'ALL')
+    </select>
+
+    <!-- 국가 목록 조회 -->
+    <select id="findAllCountries" resultType="map">
+        SELECT country_code, country_name, currency, is_active
+        FROM country_ent
+        ORDER BY country_code
+    </select>
+
+    <!-- 국가 활성/비활성 토글 -->
+    <update id="toggleCountryActive">
+        UPDATE country_ent
+        SET is_active = 1 - is_active
+        WHERE country_code = #{countryCode}
+    </update>
+
+    <!-- 국가 활성 상태 조회 -->
+    <select id="findCountryActiveStatus" resultType="java.lang.Integer">
+        SELECT is_active
+        FROM country_ent
+        WHERE country_code = #{countryCode}
+    </select>
+
+    <!-- HQ 상품 목록 -->
+    <select id="findAllProducts" resultType="map">
+        SELECT product_code, product_name_ko, status
+        FROM product_master
+    </select>
+
+    <!-- 국가별 매출 합계 -->
+    <select id="findSalesByCountry" resultType="map">
+        SELECT f.country_code, e.country_name,
+               IFNULL(SUM(f.amount_krw), 0) AS total_krw,
+               IFNULL(SUM(f.quantity), 0) AS total_qty
+        FROM country_ent e
+                 LEFT JOIN fact_sales f ON e.country_code = f.country_code
+        GROUP BY f.country_code, e.country_name
+    </select>
+
+    <!-- 이번 달 매출 합계 -->
+    <select id="findMonthlySales" resultType="java.lang.Double">
+        SELECT IFNULL(SUM(amount_krw), 0)
+        FROM fact_sales
+        WHERE sale_date >= DATE_FORMAT(NOW(), '%Y-%m-01')
+    </select>
+
+    <!-- 배치 로그 등록 -->
+    <insert id="insertBatchLog">
+        INSERT INTO batch_log (batch_name, country_code, status,
+                               started_at, ended_at, records_processed, error_message)
+        VALUES (#{batchName}, #{countryCode}, #{status},
+                #{startedAt}, NOW(), #{records}, #{errorMsg})
+    </insert>
+
+    <!-- 배치 로그 총 건수 -->
+    <select id="countBatchLogs" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM batch_log ${where}
+    </select>
+
+    <!-- 배치 통계 (최근 7일) -->
+    <select id="findBatchStats" resultType="map">
+        SELECT batch_name,
+        COUNT(*) AS total_runs,
+        SUM(CASE WHEN status='SUCCESS' THEN 1 ELSE 0 END) AS success_cnt,
+        SUM(CASE WHEN status='FAIL' THEN 1 ELSE 0 END) AS fail_cnt,
+        ROUND(AVG(TIMESTAMPDIFF(SECOND, started_at, ended_at)), 1) AS avg_sec
+        FROM batch_log
+        WHERE started_at >= #{sinceDate}
+        <!-- WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) -->
+        GROUP BY batch_name
+        ORDER BY batch_name
+    </select>
+
+    <!-- 감사 로그 -->
+    <select id="findAuditLogs" resultType="map">
+        SELECT * FROM audit_log WHERE 1=1
+        <if test="action != null and action != ''">
+            AND action = #{action}
+        </if>
+        <if test="entity != null and entity != ''">
+            AND entity = #{entity}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{size}
+    </select>
+
+</mapper>

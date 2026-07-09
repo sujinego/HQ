@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lg.hq.hqserver.mapper.country.CountryMapper">
+
+    <!-- ── 주문 ───────────────────────────────────────── -->
+
+    <select id="countTodayOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <!-- 데이터퀄리티 음수 금액 -->
+    <select id="countNegativeOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM orders WHERE total_amount &lt; 0
+    </select>
+
+    <!-- 데이터 퀄리티 이메일 누락 -->
+    <select id="countMissingEmailCustomers" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM customer
+        WHERE contact_email IS NULL OR contact_email = ''
+    </select>
+
+    <!-- ── 고객 ───────────────────────────────────────── -->
+
+    <select id="countAllCustomers" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM customer
+    </select>
+
+    <!-- ── 상품 가격 ───────────────────────────────────── -->
+
+    <select id="findAllProductCodes" resultType="java.lang.String">
+        SELECT product_code FROM local_product_price
+    </select>
+
+    <!-- 상태별 주문 수 -->
+    <select id="countOrdersByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM orders WHERE status = #{status}
+    </select>
+
+    <select id="findRecentOrders" resultType="map">
+        SELECT o.*, oi.product_code, oi.quantity, oi.unit_price
+        FROM orders o
+                 LEFT JOIN order_items oi ON o.order_no = oi.order_no
+        ORDER BY o.created_at DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 주문 목록 (orders만, JOIN 없음) -->
+    <select id="findOrdersPaged" resultType="map">
+        SELECT order_no, customer_id, total_amount, status, order_date, created_at
+        FROM orders WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (order_no LIKE CONCAT('%',#{keyword},'%')
+            OR customer_id LIKE CONCAT('%',#{keyword},'%'))
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND order_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND order_date &lt;= #{endDate}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 주문 상세 (order_items) -->
+    <select id="findOrderItems" resultType="map">
+        SELECT oi.product_code, oi.quantity, oi.unit_price,
+               oi.quantity * oi.unit_price AS subtotal
+        FROM order_items oi
+        WHERE oi.order_no = #{orderNo}
+        ORDER BY oi.id
+    </select>
+
+    <!-- 주문 상태 변경 -->
+    <update id="updateOrderStatus">
+        UPDATE orders SET status = #{status} WHERE order_no = #{orderNo}
+    </update>
+
+    <!-- ── 주문 삭제 ───────────────────────────────────────── -->
+    <delete id="deleteOrderItems">
+        DELETE FROM order_items WHERE order_no = #{orderNo}
+    </delete>
+
+    <delete id="deleteOrder">
+        DELETE FROM orders WHERE order_no = #{orderNo}
+    </delete>
+
+    <select id="findCustomerCredit" resultType="map">
+        SELECT credit_limit, current_credit FROM customer
+        WHERE customer_id = #{customerId}
+    </select>
+
+    <insert id="insertOrder">
+        INSERT INTO orders
+            (order_no, customer_id, total_amount, status, order_date, created_at)
+        VALUES (#{orderNo}, #{customerId}, #{totalAmount},
+                #{status}, #{orderDate}, NOW())
+    </insert>
+
+    <insert id="insertOrderItem">
+        INSERT INTO order_items
+            (order_no, product_code, quantity, unit_price)
+        VALUES (#{orderNo}, #{productCode}, #{quantity}, #{unitPrice})
+    </insert>
+
+    <!-- 주문 단건 조회 (삭제 전 데이터 확인용) -->
+    <select id="findOrderByNo" resultType="map">
+        SELECT order_no, customer_id, total_amount, status, order_date
+        FROM orders WHERE order_no = #{orderNo}
+    </select>
+
+    <!-- 주문 건수 -->
+    <select id="countOrdersPaged" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM orders WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (order_no LIKE CONCAT('%',#{keyword},'%')
+            OR customer_id LIKE CONCAT('%',#{keyword},'%'))
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND order_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND order_date &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 주문 현재 상태 조회 (변경 전 상태 감사 로그용) -->
+    <select id="selectOrderStatus" resultType="java.lang.String">
+        SELECT status FROM orders WHERE order_no = #{orderNo}
+    </select>
+
+</mapper>

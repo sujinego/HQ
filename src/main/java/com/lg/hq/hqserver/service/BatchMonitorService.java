@@ -115,7 +115,6 @@ public class BatchMonitorService {
     public Map<String, Object> getBatchLogs(String batchName, String status, int page, int size) {
 
         StringBuilder where = new StringBuilder("WHERE 1=1 ");
-        List<Object> params = new ArrayList<>();
 
         if (batchName != null && !batchName.isEmpty()) {
             where.append("AND batch_name = '").append(batchName).append("' ");
@@ -155,7 +154,10 @@ public class BatchMonitorService {
         return hqMapper.findAuditLogs(size, action, entity);
     }
 
-
+    /**
+     * 캐시 통계
+     * POST /api/batch/cache-stats
+     */
     public Map<String, Object> getCacheStats() {
         Map<String, Object> result = new LinkedHashMap<>();
 
@@ -178,20 +180,6 @@ public class BatchMonitorService {
         });
         return result;
     }
-//
-//    @PostMapping("/run/large-product-sync")
-//    public String runLargeProductSync() {
-//        try {
-//            org.springframework.batch.core.JobParameters params =
-//                    new org.springframework.batch.core.JobParametersBuilder()
-//                            .addLong("timestamp", System.currentTimeMillis())
-//                            .toJobParameters();
-//            jobLauncher.run(largeProductSyncJob, params);
-//            return "대용량 상품 동기화 배치 실행 완료 (파티셔닝 4분할, chunk 1000)";
-//        } catch (Exception e) {
-//            return "실행 실패: " + e.getMessage();
-//        }
-//    }
 
 }
 
