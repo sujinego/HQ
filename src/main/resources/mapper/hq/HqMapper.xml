@@ -132,7 +132,11 @@
 
     <!-- 감사 로그 -->
     <select id="findAuditLogs" resultType="map">
-        SELECT * FROM audit_log WHERE 1=1
+        SELECT id, action, entity, entity_id,
+        CAST(before_data AS VARCHAR) AS before_data,
+        CAST(after_data AS VARCHAR)  AS after_data,
+        user_id, ip_address, created_at
+        FROM audit_log WHERE 1=1
         <if test="action != null and action != ''">
             AND action = #{action}
         </if>

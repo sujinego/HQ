@@ -99,6 +99,11 @@ public class DataSourceConfig {
         f.setMapperLocations(
                 new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
         );
+        // MyBatis 설정 추가
+        org.apache.ibatis.session.Configuration config =
+                new org.apache.ibatis.session.Configuration();
+        config.setMapUnderscoreToCamelCase(true);
+        f.setConfiguration(config);
         return f.getObject();
     }
 
@@ -110,6 +115,11 @@ public class DataSourceConfig {
         f.setMapperLocations(
                 new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
         );
+        // MyBatis 설정 추가
+        org.apache.ibatis.session.Configuration config =
+                new org.apache.ibatis.session.Configuration();
+        config.setMapUnderscoreToCamelCase(true);
+        f.setConfiguration(config);
         return f.getObject();
     }
 
@@ -121,6 +131,11 @@ public class DataSourceConfig {
         f.setMapperLocations(
                 new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION_PATTERN)
         );
+        // MyBatis 설정 추가
+        org.apache.ibatis.session.Configuration config =
+                new org.apache.ibatis.session.Configuration();
+        config.setMapUnderscoreToCamelCase(true);
+        f.setConfiguration(config);
         return f.getObject();
     }
 
