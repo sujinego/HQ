@@ -80,7 +80,7 @@ public class OrderService {
     private List<String> getActiveCountryCodes() {
         return hqMapper.findAllCountries().stream()
                 .filter(c -> {
-                    Object active = c.get("is_active");
+                    Object active = getIgnoreCase(c, "is_active");
                     if (active == null) return false;
                     if (active instanceof Boolean) {
                         return (Boolean) active;
@@ -131,7 +131,14 @@ public class OrderService {
         return buildPageResult(paged, totalCount, page, size);
     }
 
-
+    // 대소문자 구분 없이 Map에서 값 찾기 (H2는 대문자, MySQL은 소문자로 컬럼 반환하는 차이 방어)
+    private Object getIgnoreCase(Map<String, Object> map, String key) {
+        if (map.containsKey(key)) return map.get(key);
+        for (String k : map.keySet()) {
+            if (k.equalsIgnoreCase(key)) return map.get(k);
+        }
+        return null;
+    }
     /**
      * 주문 등록 트랜잭션
      * 1. 주문 저장
