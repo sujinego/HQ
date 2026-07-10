@@ -87,7 +87,7 @@ public class OrderService {
                     }
                     return ((Number) active).intValue() == 1;
                 })
-                .map(c -> (String) c.get("country_code"))
+                .map(c -> (String) getIgnoreCase(c, "country_code"))
                 .collect(Collectors.toList());
     }
     //전체 국가
