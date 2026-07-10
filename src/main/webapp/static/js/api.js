@@ -55,36 +55,6 @@ var API = (function () {
             return r.json();
         });
     }
-    // ── H2 대문자 컬럼명 → 소문자 변환 ──────────────────────
-
-    function normalizeKeys(obj) {
-        if (!obj || typeof obj !== 'object') return obj;
-        var result = {};
-        Object.keys(obj).forEach(function (key) {
-            result[key.toLowerCase()] = obj[key];
-        });
-        return result;
-    }
-
-    function normalizeResponse(data) {
-        if (Array.isArray(data)) {
-            return data.map(function (item) {
-                return normalizeResponse(item);
-            });
-        }
-        if (data && typeof data === 'object') {
-            var lowered = normalizeKeys(data);
-            Object.keys(lowered).forEach(function (key) {
-                var val = lowered[key];
-                if (Array.isArray(val) || (val && typeof val === 'object')) {
-                    lowered[key] = normalizeResponse(val);
-                }
-            });
-            return lowered;
-        }
-        return data;
-    }
-
 
     // ApiResponse 래퍼 처리
     function unwrap(res) {
@@ -96,17 +66,16 @@ var API = (function () {
     function normalizeResponse(data) {
         if (Array.isArray(data)) {
             return data.map(function (item) {
-                return typeof item === 'object' ? normalizeKeys(item) : item;
+                return normalizeResponse(item);
             });
         }
         if (data && typeof data === 'object') {
+            var lowered = normalizeKeys(data);
             var result = {};
-            Object.keys(data).forEach(function (key) {
-                var val = data[key];
-                if (Array.isArray(val)) {
+            Object.keys(lowered).forEach(function (key) {
+                var val = lowered[key];
+                if (Array.isArray(val) || (val && typeof val === 'object')) {
                     result[key] = normalizeResponse(val);
-                } else if (val && typeof val === 'object') {
-                    result[key] = normalizeKeys(val);
                 } else {
                     result[key] = val;
                 }
@@ -115,7 +84,6 @@ var API = (function () {
         }
         return data;
     }
-
     function normalizeKeys(obj) {
         if (!obj) return {};
         var result = {};
